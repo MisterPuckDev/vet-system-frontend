@@ -1,0 +1,20 @@
+# Dependencias y builds previos
+node_modules/
+dist/
+dist-ssr/
+
+# Git y metadatos
+.git/
+.gitignore
+
+# IDEs y configuración local
+.idea/
+.vscode/
+*.md
+.env.local
+.env.*.local
+
+# Logs e instaladores
+npm-debug.log
+yarn-error.log
+Dockerfile

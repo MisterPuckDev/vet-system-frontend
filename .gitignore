@@ -1,0 +1,34 @@
+# Dependencias
+node_modules
+.pnp
+.pnp.js
+
+# Producción
+dist
+dist-ssr
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Entorno de Desarrollo de WebStorm (IDE)
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Entorno Local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vite y TypeScript
+.eslintcache
+*.tsbuildinfo
+vite.config.ts.timestamp-*

@@ -1,201 +1,99 @@
-// src/routes/AppRouter.tsx
-import React, {lazy, Suspense} from 'react';
-import {createBrowserRouter, Navigate} from 'react-router-dom';
-import {ProtectedRoute} from './ProtectedRoute';
-import GlobalError from '../pages/GlobalError'; // Importación NORMAL, no lazy
+import React, { Suspense } from 'react';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { AuthProvider } from '../features/auth/context/AuthContext';
+import { LoginForm } from '../features/auth/components/LoginForm';
+import { ProtectedRoute } from './ProtectedRoute';
+import { Layout } from '../features/shared/components/Layout'; // Importamos el nuevo Layout
 
-// ==========================================
-// 1. ESTADO VISUAL DE CARGA (FALLBACK)
-// ==========================================
-const LoadingFallback: React.FC = () => (
-    <div className="flex items-center justify-center h-screen bg-gray-50 w-full">
-        <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-            <p className="text-gray-500 font-medium animate-pulse">Cargando módulo...</p>
-        </div>
+// Lazy loading Feature Slices
+const ReceptionDashboard = React.lazy(() => import('../features/reception/ReceptionDashboard'));
+const ClinicalRoutes = React.lazy(() => import('../features/clinical/ClinicalRoutes'));
+const InventoryDashboard = React.lazy(() => import('../features/inventory/InventoryDashboard'));
+const BillingDashboard = React.lazy(() => import('../features/billing/BillingDashboard'));
+const AdminDashboard = React.lazy(() => import('../features/admin/AdminDashboard'));
+const CustomerPortal = React.lazy(() => import('../features/portal/CustomerPortal'));
+const Unauthorized = React.lazy(() => import('../features/shared/Unauthorized'));
+
+const GlobalLoader: React.FC = () => (
+    <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
     </div>
 );
 
-// ==========================================
-// 2. DEFINICIÓN DE COMPONENTES PEREZOSOS
-// ==========================================
-const AuthLayout = lazy(() => import('../layouts/AuthLayout'));
-const StaffLayout = lazy(() => import('../layouts/StaffLayout'));
-// const ClientLayout = lazy(() => import('../layouts/ClientLayout'));
+// Este es el cascarón que inyecta el Contexto a toda la app
+const RootLayout: React.FC = () => (
+    <AuthProvider>
+        <Suspense fallback={<GlobalLoader />}>
+            <Outlet />
+        </Suspense>
+    </AuthProvider>
+);
 
-const Login = lazy(() => import('../features/auth/pages/Login'));
-// const Unauthorized = lazy(() => import('../features/auth/pages/Unauthorized'));
-
-const ReceptionDashboard = lazy(() => import('../features/reception/pages/Dashboard'));
-// const MedicalRecords = lazy(() => import('../features/clinical/pages/MedicalRecords'));
-const PatientClinicalHistory = lazy(() => import('../features/clinical/pages/PatientClinicalHistory'));
-// const InventoryCatalog = lazy(() => import('../features/inventory/pages/Catalog'));
-// const BillingPOS = lazy(() => import('../features/billing/pages/POS'));
-// const AdminMetrics = lazy(() => import('../features/admin/pages/Metrics'));
-// const ClientPets = lazy(() => import('../features/client-portal/pages/MyPets'));
-
-// ==========================================
-// 3. CONFIGURACIÓN DEL ENRUTADOR PRINCIPAL
-// ==========================================
 export const router = createBrowserRouter([
     {
-        // ENVOLTORIO RAÍZ INVISIBLE PARA MANEJO GLOBAL DE ERRORES
-        errorElement: <GlobalError/>,
+        element: <RootLayout />, // El nivel superior provee Autenticación y Suspense
         children: [
-            {
-                path: '/',
-                element: <Navigate to="/auth/login" replace/>,
-            },
+            { path: '/login', element: <LoginForm /> },
+            { path: '/unauthorized', element: <Unauthorized /> },
 
-            // --- RUTAS PÚBLICAS Y AUTENTICACIÓN ---
+            // Rutas Protegidas Envueltas en el Layout Global (Sidebar + Header)
             {
-                path: '/auth',
-                element: (
-                    <Suspense fallback={<LoadingFallback/>}>
-                        <AuthLayout/>
-                    </Suspense>
-                ),
+                element: <Layout />,
                 children: [
                     {
-                        path: 'login',
+                        path: '/reception/*',
                         element: (
-                            <Suspense fallback={<LoadingFallback/>}>
-                                <Login/>
-                            </Suspense>
-                        ),
+                            <ProtectedRoute allowedRoles={['Receptionist', 'Administrator']}>
+                                <ReceptionDashboard />
+                            </ProtectedRoute>
+                        )
                     },
-                ],
-            },
-            // {
-            //     path: '/unauthorized',
-            //     element: (
-            //         <Suspense fallback={<LoadingFallback/>}>
-            //             <Unauthorized/>
-            //         </Suspense>
-            //     ),
-            // },
-
-            // --- RUTAS PRIVADAS: PERSONAL DE LA CLÍNICA (STAFF) ---
-            {
-                path: '/staff',
-                element: (
-                    <Suspense fallback={<LoadingFallback/>}>
-                        <StaffLayout/>
-                    </Suspense>
-                ),
-                children: [
                     {
-                        element: <ProtectedRoute allowedRoles={['ADMIN', 'VET', 'RECEPTION']}/>,
-                        children: [
-                            {
-                                path: 'reception',
-                                element: (
-                                    <Suspense fallback={<LoadingFallback/>}>
-                                        <ReceptionDashboard/>
-                                    </Suspense>
-                                ),
-                            },
-                        ],
+                        path: '/clinical/*',
+                        element: (
+                            <ProtectedRoute allowedRoles={['Veterinarian', 'Administrator']}>
+                                <ClinicalRoutes />
+                            </ProtectedRoute>
+                        )
                     },
-                    // {
-                    //     element: <ProtectedRoute allowedRoles={['ADMIN', 'VET']}/>,
-                    //     children: [
-                    //         {
-                    //             path: 'clinical/records',
-                    //             element: (
-                    //                 <Suspense fallback={<LoadingFallback/>}>
-                    //                     <MedicalRecords/>
-                    //                 </Suspense>
-                    //             ),
-                    //         },
-                    //         {
-                    //             path: 'inventory',
-                    //             element: (
-                    //                 <Suspense fallback={<LoadingFallback/>}>
-                    //                     <InventoryCatalog/>
-                    //                 </Suspense>
-                    //             ),
-                    //         },
-                    //     ],
-                    // },
-                    // {
-                    //     element: <ProtectedRoute allowedRoles={['ADMIN', 'RECEPTION']}/>,
-                    //     children: [
-                    //         {
-                    //             path: 'billing/pos',
-                    //             element: (
-                    //                 <Suspense fallback={<LoadingFallback/>}>
-                    //                     <BillingPOS/>
-                    //                 </Suspense>
-                    //             ),
-                    //         },
-                    //     ],
-                    // },
-                    // {
-                    //     element: <ProtectedRoute allowedRoles={['ADMIN']}/>,
-                    //     children: [
-                    //         {
-                    //             path: 'admin/metrics',
-                    //             element: (
-                    //                 <Suspense fallback={<LoadingFallback/>}>
-                    //                     <AdminMetrics/>
-                    //                 </Suspense>
-                    //             ),
-                    //         },
-                    //     ],
-                    // },
-                ],
-            },
-
-            // --- RUTA PRIVADA: HISTORIA CLÍNICA DINÁMICA ---
-            {
-                path: '/clinica',
-                element: (
-                    <Suspense fallback={<LoadingFallback/>}>
-                        <StaffLayout/>
-                    </Suspense>
-                ),
-                children: [
                     {
-                        element: <ProtectedRoute allowedRoles={['ADMIN', 'VET']}/>,
-                        children: [
-                            {
-                                path: 'paciente/:patientId',
-                                element: (
-                                    <Suspense fallback={<LoadingFallback/>}>
-                                        <PatientClinicalHistory/>
-                                    </Suspense>
-                                ),
-                            },
-                        ],
+                        path: '/inventory/*',
+                        element: (
+                            <ProtectedRoute allowedRoles={['Administrator', 'Veterinarian']}>
+                                <InventoryDashboard />
+                            </ProtectedRoute>
+                        )
                     },
-                ],
+                    {
+                        path: '/billing/*',
+                        element: (
+                            <ProtectedRoute allowedRoles={['Administrator', 'Receptionist']}>
+                                <BillingDashboard />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: '/admin/*',
+                        element: (
+                            <ProtectedRoute allowedRoles={['Administrator']}>
+                                <AdminDashboard />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: '/portal/*',
+                        element: (
+                            <ProtectedRoute allowedRoles={['Customer']}>
+                                <CustomerPortal />
+                            </ProtectedRoute>
+                        )
+                    },
+                    // Redirección por defecto post-login hacia una capa segura según el rol
+                    { path: '/dashboard', element: <Navigate to="/clinical" replace /> }
+                ]
             },
-
-            // --- RUTAS PRIVADAS: PORTAL PARA DUEÑOS DE MASCOTAS ---
-            // {
-            //     path: '/portal',
-            //     element: (
-            //         <Suspense fallback={<LoadingFallback/>}>
-            //             <ClientLayout/>
-            //         </Suspense>
-            //     ),
-            //     children: [
-            //         {
-            //             element: <ProtectedRoute allowedRoles={['CLIENT']}/>,
-            //             children: [
-            //                 {
-            //                     path: 'my-pets',
-            //                     element: (
-            //                         <Suspense fallback={<LoadingFallback/>}>
-            //                             <ClientPets/>
-            //                         </Suspense>
-            //                     ),
-            //                 },
-            //             ],
-            //         },
-            //     ],
-            // },
-        ],
-    },
+            // Fallback para URLs no encontradas
+            { path: '*', element: <Navigate to="/login" replace /> }
+        ]
+    }
 ]);

@@ -5,7 +5,7 @@ import { ProductModal } from './components/ProductModal';
 import type { Product } from './types';
 
 const InventoryDashboard: React.FC = () => {
-    const { data, filteredProducts, isLoading, error, searchTerm, setSearchTerm, categoryFilter, setCategoryFilter, addProduct, updateProduct, refetch } = useInventory();
+    const { data, filteredProducts, isLoading, error, searchTerm, setSearchTerm, categoryFilter, setCategoryFilter, addProduct, updateProduct } = useInventory();
 
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);

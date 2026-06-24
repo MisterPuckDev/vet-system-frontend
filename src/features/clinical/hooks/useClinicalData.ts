@@ -3,16 +3,18 @@ import type { ClinicalDashboardData } from '../types';
 import { clinicalService } from '../services/clinicalService';
 
 export const useClinicalData = () => {
-    const [data, setData] = useState<ClinicalDashboardData | null>(null);
+    // 1. Renombramos 'data' a 'dashboardData' para mayor claridad semántica
+    const [dashboardData, setDashboardData] = useState<ClinicalDashboardData | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchDashboardData = useCallback(async () => {
+    // 2. Renombramos 'fetchDashboardData' a 'refreshData' para coincidir con la UI
+    const refreshData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
             const result = await clinicalService.getDashboardData();
-            setData(result);
+            setDashboardData(result);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message);
@@ -25,8 +27,9 @@ export const useClinicalData = () => {
     }, []);
 
     useEffect(() => {
-        fetchDashboardData();
-    }, [fetchDashboardData]);
+        refreshData();
+    }, [refreshData]);
 
-    return { data, isLoading, error, refetch: fetchDashboardData };
+    // 3. Exportamos exactamente los nombres que el componente ClinicalDashboard espera
+    return { dashboardData, isLoading, error, refreshData };
 };

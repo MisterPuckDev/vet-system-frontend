@@ -30,7 +30,7 @@ const App: React.FC = () => {
               <Route
                   path="/recepcion/*"
                   element={
-                    <ProtectedRoute allowedRoles={['Recepcionista', 'Administrador']}>
+                    <ProtectedRoute allowedRoles={['Receptionist', 'Administrator']}>
                       <RecepcionDashboard />
                     </ProtectedRoute>
                   }
@@ -39,7 +39,7 @@ const App: React.FC = () => {
               <Route
                   path="/clinico/*"
                   element={
-                    <ProtectedRoute allowedRoles={['Veterinario', 'Administrador']}>
+                    <ProtectedRoute allowedRoles={['Veterinarian', 'Administrator']}>
                       <ClinicoDashboard />
                     </ProtectedRoute>
                   }
@@ -48,7 +48,7 @@ const App: React.FC = () => {
               <Route
                   path="/inventario/*"
                   element={
-                    <ProtectedRoute allowedRoles={['Administrador', 'Veterinario']}>
+                    <ProtectedRoute allowedRoles={['Administrator', 'Veterinarian']}>
                       <InventarioDashboard />
                     </ProtectedRoute>
                   }
@@ -57,7 +57,7 @@ const App: React.FC = () => {
               <Route
                   path="/facturacion/*"
                   element={
-                    <ProtectedRoute allowedRoles={['Administrador', 'Recepcionista']}>
+                    <ProtectedRoute allowedRoles={['Administrator', 'Receptionist']}>
                       <FacturacionDashboard />
                     </ProtectedRoute>
                   }
@@ -66,7 +66,7 @@ const App: React.FC = () => {
               <Route
                   path="/admin/*"
                   element={
-                    <ProtectedRoute allowedRoles={['Administrador']}>
+                    <ProtectedRoute allowedRoles={['Administrator']}>
                       <AdminDashboard />
                     </ProtectedRoute>
                   }
@@ -75,7 +75,7 @@ const App: React.FC = () => {
               <Route
                   path="/portal/*"
                   element={
-                    <ProtectedRoute allowedRoles={['Cliente']}>
+                    <ProtectedRoute allowedRoles={['Customer']}>
                       <ClientePortal />
                     </ProtectedRoute>
                   }
